@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <errno.h>
 #define FILE_ERROR "File Naming Error."
 #define INDEX_ERROR "Index Out of Bounds Error."
 #define MEMORY_ERROR "Memory Error."
