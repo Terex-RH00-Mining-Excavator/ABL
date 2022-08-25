@@ -1,17 +1,10 @@
-#ifndef JAX
-#define JAX
+#ifndef ABL
+#define ABL
 #include "PROTOTYPES.h"
-#define MAX 100
-
 
 int main(int argc, char** argv){
-	long MCapacity = 0, StorageIndex = 0;
-	char *Storage = (char*)calloc(MCapacity,sizeof(char));
+  // File Input
 	FILE* File = fopen(argv[1], "r");
-  if(!File){
-    printf("%s\n", strerror(errno));
-    return 0;
-  }
 	if(argv[2]) printf("\nOutput: \n");
 	
 	// COLLECT DATA
@@ -23,6 +16,8 @@ int main(int argc, char** argv){
 	} code[index] = '\n', code[++index] = '\0';
   
 	// INTERPRET DATA
+  long MCapacity = 0, StorageIndex = 0;
+	char *Storage = (char*)calloc(MCapacity,sizeof(char));
 	for(index = 0; code[index]; index++){
 		Basic_Syntax(code[index], Storage, &StorageIndex, MCapacity);
 		Complex_Syntax(code[index], code, &Storage, &StorageIndex, &index,&MCapacity);
