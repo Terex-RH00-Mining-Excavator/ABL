@@ -2,12 +2,12 @@
 #include "String_Functions.h"
 Token Collect(const char* string, char op1, char op2, size_t start){
 	size_t i, j, v=0, B=0;
-  if((op1 == '{' && op2 == '}') || (op1 == ':' && op2 == '.')) B = 1;
+  if((op1 == '{' && op2 == '}') || (op1 == ':' && op2 == '.'))B = 1;
 	Token collect = {.sz = 1, .contents = (char*)malloc(collect.sz)};
-	for(i = start, j = 0, v = 0;  string[i] != '\0'; i++){
+	for(i = start, j = 0, v = 0;  string[i]; i++){
 		if(collect.beg){
       if(B) v += string[i] == op1;
-			if(collect.sz <= j) 
+			if(collect.sz <= j)
 				collect.contents = (char*)realloc(collect.contents, ++collect.sz);
 			if(string[i] == op2 && !(v--)){
 				collect.end  = op2, collect.closing = i;
@@ -56,14 +56,16 @@ void Basic_Syntax(char character, char* storage, long* index, long mcapacity){
 		case 'S':
 			printf("%s", storage);
 			break;
-    
 	}
 }
 
 
 void Complex_Syntax(char character, char* code, char** storage, long* storageindex, size_t* i, long* mcapacity){
-	Token token = {}, token2 = {}; long v = 0;
+	Token token = {}, token2 = {}; long v;
 		switch(character){
+      case ';':
+        *i = ((v = ffo(code, *i, "\n"))!=-1) ? v:*i;
+        break;
 			case '[':
 				token = Collect(code, '[', ']', *i);
 				if(token.beg&&token.end){
@@ -74,10 +76,6 @@ void Complex_Syntax(char character, char* code, char** storage, long* storageind
 				} else ERROR(SYNTAX_ERROR);
         free(token.contents);
 				break;
-      case ';':
-        if(code[*i] == ';')
-			    *i = ((v = ffo(code, *i, "\n"))!=-1) ? v:*i;
-        return;
       case '#':
         token = Collect(code, '#', '#', *i);
         if(token.beg&&token.end){
@@ -92,8 +90,14 @@ void Complex_Syntax(char character, char* code, char** storage, long* storageind
 				if(token.beg&&token.end){
 					char C; int D;
 					sscanf(token.contents, "%c%d", &C, &D);
-					D = (D||C=='#'||C=='=') ? D: *(*storage+*storageindex);
+					D = (D||C=='#') ? D: *(*storage+*storageindex);
+          //storage[*storageindex];
 					switch(C){
+            case '%':
+              if(*(*storage+*storageindex)%D > 127||
+              *(*storage+*storageindex)%D < -128) ERROR(BYTE_ERROR);
+							*(*storage+*storageindex) %= D;
+							break;
 						case '*':
               if(*(*storage+*storageindex)*D > 127||
               *(*storage+*storageindex)*D < -128) ERROR(BYTE_ERROR);
@@ -117,18 +121,17 @@ void Complex_Syntax(char character, char* code, char** storage, long* storageind
               *(*storage+*storageindex) = *(*storage+D);
               break;
             case '>':
-              if(D > *mcapacity-1) ERROR(INDEX_ERROR);
+              if(*storageindex+D > *mcapacity-1) ERROR(INDEX_ERROR);
               *storageindex += D;
               break;
             case '<':
-              if(D <= -1) ERROR(INDEX_ERROR);
-              *storageindex += D;
+              if(*storageindex-D <= -1) ERROR(INDEX_ERROR);
+              *storageindex -= D;
               break;
-            // From this point is a modification
+              // From this point is a modification
             case '=':
               token2 = Collect(code, ':', '.', token.closing);
               if(token2.beg&&token2.end){
-                //printf("<p>%s</p>", token2.contents);
                 if(*(*storage+*storageindex) == D){
                   for(size_t X = 0; token2.contents[X]; X++){
 						        Basic_Syntax(token2.contents[X], *storage, storageindex, *mcapacity);
@@ -136,10 +139,11 @@ void Complex_Syntax(char character, char* code, char** storage, long* storageind
                   }
                 }
               }
+              free(token.contents);
               free(token2.contents);
               *i = token2.closing;
               return;
-            // End of modification
+              // End of modification
 						default:
               ERROR(SYNTAX_ERROR);
               break;
