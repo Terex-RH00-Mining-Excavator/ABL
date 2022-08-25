@@ -6,6 +6,7 @@
 
 #ifndef _STRING_FUNCTIONS_
 #define _STRING_FUNCTIONS_
+#include <stdio.h>
 #include <stdlib.h>
 
 size_t size(char* str){
